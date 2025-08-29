@@ -510,8 +510,8 @@ public abstract class TopDocsCollectorContext extends QueryCollectorContext impl
 
         private class SimpleTopDocsCollectorManager
             implements
-                CollectorManager<Collector, ReduceableSearchResult>,
-                EarlyTerminatingListener {
+            CollectorManager<Collector, ReduceableSearchResult>,
+            EarlyTerminatingListener {
             private Integer terminatedAfter;
             private final CollectorManager<? extends TopDocsCollector<?>, ? extends TopDocs> manager;
 

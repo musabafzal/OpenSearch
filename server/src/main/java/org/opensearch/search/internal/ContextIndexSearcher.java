@@ -299,6 +299,7 @@ public class ContextIndexSearcher extends IndexSearcher implements Releasable {
         result.topDocs(new TopDocsAndMaxScore(mergedTopDocs, Float.NaN), formats);
     }
 
+    ///Below function is invoked by IndexSearcher per thread for concurrent segment search
     @Override
     protected void search(LeafReaderContextPartition[] partitions, Weight weight, Collector collector) throws IOException {
         searchContext.indexShard().getSearchOperationListener().onPreSliceExecution(searchContext);
@@ -348,7 +349,7 @@ public class ContextIndexSearcher extends IndexSearcher implements Releasable {
             weight = wrapWeight(weight);
             // See please https://github.com/apache/lucene/pull/964
             collector.setWeight(weight);
-            leafCollector = collector.getLeafCollector(ctx);
+            leafCollector = collector.getLeafCollector(ctx);//MultiCollector.getLeafCollector
         } catch (CollectionTerminatedException e) {
             // there is no doc of interest in this reader context
             // continue with the following leaf
@@ -647,16 +648,17 @@ public class ContextIndexSearcher extends IndexSearcher implements Releasable {
     }
 
     // package-private for testing
+
     LeafSlice[] slicesInternal(List<LeafReaderContext> leaves, int targetMaxSlice) {
         LeafSlice[] leafSlices;
         if (targetMaxSlice == 0) {
             // use the default lucene slice calculation
             leafSlices = super.slices(leaves);
-            logger.debug("Slice count using lucene default [{}]", leafSlices.length);
+            logger.info("Slice count using lucene default [{}]", leafSlices.length);
         } else {
             // use the custom slice calculation based on targetMaxSlice
             leafSlices = MaxTargetSliceSupplier.getSlices(leaves, targetMaxSlice);
-            logger.debug("Slice count using max target slice supplier [{}]", leafSlices.length);
+            logger.info("Slice count using max target slice supplier [{}]", leafSlices.length);
         }
         return leafSlices;
     }
